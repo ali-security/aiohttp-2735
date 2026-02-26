@@ -19,6 +19,7 @@ from aiohttp.http_parser import (
     HeadersParser,
     HttpPayloadParser,
     HttpRequestParserPy,
+    HttpRequestParser,
     HttpResponseParserPy,
     HttpVersion,
 )
@@ -1310,19 +1311,10 @@ def test_parse_chunked_payload_empty_body_than_another_chunked(
     assert b"second" == b"".join(d for d in payload._buffer)
 
 
-@pytest.mark.skipif(NO_EXTENSIONS, reason="Only tests C parser.")
-async def test_parse_chunked_payload_with_lf_in_extensions_c_parser(
-    loop: asyncio.AbstractEventLoop, protocol: BaseProtocol
+async def test_parse_chunked_payload_with_lf_in_extensions(
+    parser: HttpRequestParser,
 ) -> None:
-    """Test the C-parser with a chunked payload that has a LF in the chunk extensions."""
-    # The C parser will raise a BadHttpMessage from feed_data
-    parser = HttpRequestParserC(
-        protocol,
-        loop,
-        2**16,
-        max_line_size=8190,
-        max_field_size=8190,
-    )
+    """Test chunked payload that has a LF in the chunk extensions."""
     payload = (
         b"GET / HTTP/1.1\r\nHost: localhost:5001\r\n"
         b"Transfer-Encoding: chunked\r\n\r\n2;\nxx\r\n4c\r\n0\r\n\r\n"
