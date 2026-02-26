@@ -313,7 +313,7 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: dist
+        name: dist-tarball
         path: dist
         if-no-files-found: warn
 
@@ -383,7 +383,7 @@ jobs:
         CIBW_ARCHS_MACOS: x86_64 arm64 universal2
     - uses: actions/upload-artifact@v4
       with:
-        name: dist
+        name: dist-wheels-${{ matrix.os }}-${{ matrix.qemu || 'default' }}
         path: ./wheelhouse/*.whl
         if-no-files-found: warn
 
@@ -411,8 +411,12 @@ jobs:
     - name: Download distributions
       uses: actions/download-artifact@v4
       with:
-        name: dist
-        path: dist
+        path: dist-artifacts
+        pattern: dist-*
+    - name: Consolidate distributions
+      run: |
+        mkdir -p dist
+        find dist-artifacts -type f \( -name "*.whl" -o -name "*.tar.gz" \) -exec cp {} dist/ \;
     - name: Collected dists
       run: |
         tree dist
